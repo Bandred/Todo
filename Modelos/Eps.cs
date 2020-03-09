@@ -25,9 +25,10 @@ namespace Modelos
         {
             var result = new RespuestaAux<Eps>();
 
-            if (!string.IsNullOrEmpty(nombre))
+            if (string.IsNullOrEmpty(nombre))
             {
                 result.Exitoso = false;
+                result.Mensaje = "Modelo no es válido";
 
                 return result;
             }
@@ -46,11 +47,11 @@ namespace Modelos
             return result;
         }
 
-        public static RespuestaAux<Eps> EditarEps(Guid id, DateTime registradoAt, string nombre)
+        public static RespuestaAux<Eps> EditarEps(Guid id, string nombre)
         {
             var result = new RespuestaAux<Eps>();
 
-            if (!string.IsNullOrEmpty(id.ToString()))
+            if (string.IsNullOrEmpty(id.ToString()))
             {
                 result.Exitoso = false;
                 result.Mensaje = "Modelo no es válido";
@@ -58,15 +59,7 @@ namespace Modelos
                 return result;
             }
 
-            if (!string.IsNullOrEmpty(registradoAt.ToString()))
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Modelo no es válido";
-
-                return result;
-            }
-
-            if (!string.IsNullOrEmpty(nombre))
+            if (string.IsNullOrEmpty(nombre))
             {
                 result.Exitoso = false;
                 result.Mensaje = "Modelo no es válido";
@@ -77,7 +70,6 @@ namespace Modelos
             Eps modelo = new Eps()
             {
                 Id = id,
-                RegistradoAt = registradoAt,
                 ActualizadoAt = DateTime.UtcNow,
                 Nombre = nombre
             };

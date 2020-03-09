@@ -18,7 +18,7 @@ namespace ServiciosApi
         Task<RespuestaAux<UsuarioListViewModel>> ListarTodos();
     }
 
-    class UsuarioServicio : IUsuarioServicio
+    public class UsuarioServicio : IUsuarioServicio
     {
         private readonly AppDbContext _context;
 

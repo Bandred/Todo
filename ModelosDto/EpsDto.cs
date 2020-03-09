@@ -67,7 +67,6 @@ namespace ModelosDto
     public class EpsEditarCommand
     {
         public Guid Id { get; set; }
-        public DateTime RegistradoAt { get; set; }
         public string Nombre { get; set; }
     }
     #endregion

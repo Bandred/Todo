@@ -13,9 +13,9 @@ namespace ServiciosApi
     {
         Task<RespuestaAux> Borrar(Guid id);
         Task<RespuestaAux<Guid>> Crear(EpsAgregarCommand modeloCommand);
-        Task<RespuestaAux<EpsViewModel>> Detalle(Guid id);
+        Task<EpsViewModel> Detalle(Guid id);
         Task<RespuestaAux<Guid>> Editar(Guid id, EpsEditarCommand modeloCommand);
-        Task<RespuestaAux<EpsListViewModel>> ListarTodos();
+        Task<EpsListViewModel> ListarTodos();
     }
 
     public class EpsServicio : IEpsServicio
@@ -61,15 +61,17 @@ namespace ServiciosApi
 
                 if (_item.Exitoso == true)
                 {
-                    await _context.AddAsync(_item);
+                    await _context.AddAsync(_item.Result);
                     await _context.SaveChangesAsync();
 
                     result.Result = _item.Result.Id;
                     result.Exitoso = true;
                 }
-
-                result.Exitoso = _item.Exitoso;
-                result.Mensaje = _item.Mensaje;
+                else
+                {
+                    result.Exitoso = _item.Exitoso;
+                    result.Mensaje = _item.Mensaje;
+                }
             }
             catch (Exception e)
             {
@@ -80,24 +82,22 @@ namespace ServiciosApi
             return result;
         }
 
-        public async Task<RespuestaAux<EpsViewModel>> Detalle(Guid id)
+        public async Task<EpsViewModel> Detalle(Guid id)
         {
-            var result = new RespuestaAux<EpsViewModel>();
+            var result = new EpsViewModel();
 
             try
             {
                 var _item = await _context.Eps
                     .FirstOrDefaultAsync(x => x.Id == id);
 
-                result.Exitoso = true;
-                result.Result.Item = EpsDto.ProyectarDto(_item);
-                result.Result.HabilitarEditar = true;
-                result.Result.HabilitarBorrar = true;
+                result.Item = EpsDto.ProyectarDto(_item);
+                result.HabilitarEditar = true;
+                result.HabilitarBorrar = true;
             }
             catch (Exception e)
             {
-                result.Exitoso = false;
-                result.Mensaje = e.Message;
+
             }
 
             return result;
@@ -109,25 +109,24 @@ namespace ServiciosApi
 
             try
             {
-                var _itemOriginal = await _context.Eps
-                        .FirstOrDefaultAsync(x => x.Id == id);
-
                 var _item = Eps.EditarEps(
-                    id: _itemOriginal.Id,
-                    registradoAt: _itemOriginal.RegistradoAt,
+                    id: modeloCommand.Id,
                     nombre: modeloCommand.Nombre);
+
 
                 if (_item.Exitoso == true)
                 {
-                    _context.Update(_item);
+                    _context.Eps.Update(_item.Result);
                     await _context.SaveChangesAsync();
 
                     result.Result = _item.Result.Id;
                     result.Exitoso = true;
                 }
-
-                result.Exitoso = _item.Exitoso;
-                result.Mensaje = _item.Mensaje;
+                else
+                {
+                    result.Exitoso = _item.Exitoso;
+                    result.Mensaje = _item.Mensaje;
+                }
             }
             catch (Exception e)
             {
@@ -138,9 +137,9 @@ namespace ServiciosApi
             return result;
         }
 
-        public async Task<RespuestaAux<EpsListViewModel>> ListarTodos()
+        public async Task<EpsListViewModel> ListarTodos()
         {
-            var result = new RespuestaAux<EpsListViewModel>();
+            var result = new EpsListViewModel();
 
             try
             {
@@ -152,14 +151,12 @@ namespace ServiciosApi
                     .Select(EpsDto.ProyectarDto())
                     .ToList();
 
-                result.Exitoso = true;
-                result.Result.Items = viewModelDto;
-                result.Result.HabilitarCrear = true;
+                result.Items = viewModelDto;
+                result.HabilitarCrear = true;
             }
             catch (Exception e)
             {
-                result.Exitoso = false;
-                result.Mensaje = e.Message;
+
             }
 
             return result;
