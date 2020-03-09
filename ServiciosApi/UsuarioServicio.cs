@@ -13,9 +13,9 @@ namespace ServiciosApi
     {
         Task<RespuestaAux> Borrar(Guid id);
         Task<RespuestaAux<Guid>> Crear(UsuarioAgregarCommand modeloCommand);
-        Task<RespuestaAux<UsuarioViewModel>> Detalle(Guid id);
+        Task<UsuarioViewModel> Detalle(Guid id);
         Task<RespuestaAux<Guid>> Editar(Guid id, UsuarioEditarCommand modeloCommand);
-        Task<RespuestaAux<UsuarioListViewModel>> ListarTodos();
+        Task<UsuarioListViewModel> ListarTodos();
     }
 
     public class UsuarioServicio : IUsuarioServicio
@@ -33,8 +33,8 @@ namespace ServiciosApi
 
             try
             {
-                var _item = await _context.Todos
-                    .FirstOrDefaultAsync(x => x.Id == id);
+                var _item = await _context.Usuarios
+                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 _context.Remove(_item);
 
@@ -64,15 +64,17 @@ namespace ServiciosApi
 
                 if (_item.Exitoso == true)
                 {
-                    await _context.AddAsync(_item);
+                    await _context.AddAsync(_item.Result);
                     await _context.SaveChangesAsync();
 
                     result.Result = _item.Result.Id;
                     result.Exitoso = true;
                 }
-
-                result.Exitoso = _item.Exitoso;
-                result.Mensaje = _item.Mensaje;
+                else
+                {
+                    result.Exitoso = _item.Exitoso;
+                    result.Mensaje = _item.Mensaje;
+                }
             }
             catch (Exception e)
             {
@@ -83,9 +85,9 @@ namespace ServiciosApi
             return result;
         }
 
-        public async Task<RespuestaAux<UsuarioViewModel>> Detalle(Guid id)
+        public async Task<UsuarioViewModel> Detalle(Guid id)
         {
-            var result = new RespuestaAux<UsuarioViewModel>();
+            var result = new UsuarioViewModel();
 
             try
             {
@@ -93,15 +95,13 @@ namespace ServiciosApi
                     .Include(x => x.Eps)
                     .FirstOrDefaultAsync(x => x.Id == id);
 
-                result.Exitoso = true;
-                result.Result.Item = UsuarioDto.ProyectarDto(_item);
-                result.Result.HabilitarEditar = true;
-                result.Result.HabilitarBorrar = true;
+                result.Item = UsuarioDto.ProyectarDto(_item);
+                result.HabilitarEditar = true;
+                result.HabilitarBorrar = true;
             }
             catch (Exception e)
             {
-                result.Exitoso = false;
-                result.Mensaje = e.Message;
+
             }
 
             return result;
@@ -113,27 +113,26 @@ namespace ServiciosApi
 
             try
             {
-                var _itemOriginal = await _context.Usuarios
-                        .FirstOrDefaultAsync(x => x.Id == id);
-
                 var _item = Usuario.EditarUsuario(
                     id: modeloCommand.Id,
-                    registradoAt: modeloCommand.RegistradoAt,
                     nombre: modeloCommand.Nombre,
                     tipoRhId: modeloCommand.TipoRhId,
                     epsId: modeloCommand.EpsId);
 
+
                 if (_item.Exitoso == true)
                 {
-                    _context.Update(_item);
+                    _context.Usuarios.Update(_item.Result);
                     await _context.SaveChangesAsync();
 
                     result.Result = _item.Result.Id;
                     result.Exitoso = true;
                 }
-
-                result.Exitoso = _item.Exitoso;
-                result.Mensaje = _item.Mensaje;
+                else
+                {
+                    result.Exitoso = _item.Exitoso;
+                    result.Mensaje = _item.Mensaje;
+                }
             }
             catch (Exception e)
             {
@@ -144,9 +143,9 @@ namespace ServiciosApi
             return result;
         }
 
-        public async Task<RespuestaAux<UsuarioListViewModel>> ListarTodos()
+        public async Task<UsuarioListViewModel> ListarTodos()
         {
-            var result = new RespuestaAux<UsuarioListViewModel>();
+            var result = new UsuarioListViewModel();
 
             try
             {
@@ -156,17 +155,15 @@ namespace ServiciosApi
                     .ToListAsync();
 
                 var viewModelDto = _items
-                    .Select(UsuarioDto.ProyectarDto())
-                    .ToList();
+                     .Select(UsuarioDto.ProyectarDto())
+                     .ToList();
 
-                result.Exitoso = true;
-                result.Result.Items = viewModelDto;
-                result.Result.HabilitarCrear = true;
+                result.Items = viewModelDto;
+                result.HabilitarCrear = true;
             }
             catch (Exception e)
             {
-                result.Exitoso = false;
-                result.Mensaje = e.Message;
+
             }
 
             return result;

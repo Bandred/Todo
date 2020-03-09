@@ -1,161 +1,122 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.AspNetCore.Mvc.Rendering;
-//using Microsoft.EntityFrameworkCore;
-//using Modelos;
-//using Persistencia;
+﻿using Compartida.Compartido;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using ModelosDto;
+using ServiciosApi;
+using System;
+using System.Threading.Tasks;
 
-//namespace ClienteMvc.Controllers
-//{
-//    public class UsuariosController : Controller
-//    {
-//        private readonly AppDbContext _context;
+namespace ClienteMvc.Controllers
+{
+    public class UsuariosController : Controller
+    {
+        private readonly IUsuarioServicio _usuarioServicio;
+        private readonly IEpsServicio _epsServicio;
 
-//        public UsuariosController(AppDbContext context)
-//        {
-//            _context = context;
-//        }
+        public UsuariosController(
+            IUsuarioServicio usuarioServicio,
+            IEpsServicio epsServicio)
+        {
+            _usuarioServicio = usuarioServicio;
+            _epsServicio = epsServicio;
+        }
 
-//        // GET: Usuarios
-//        public async Task<IActionResult> Index()
-//        {
-//            var appDbContext = _context.Usuarios.Include(u => u.Eps);
-//            return View(await appDbContext.ToListAsync());
-//        }
+        public async Task<ActionResult> Index()
+        {
+            return View(await _usuarioServicio.ListarTodos());
+        }
 
-//        // GET: Usuarios/Details/5
-//        public async Task<IActionResult> Details(Guid? id)
-//        {
-//            if (id == null)
-//            {
-//                return NotFound();
-//            }
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var result = await _usuarioServicio.Detalle(id);
 
-//            var usuario = await _context.Usuarios
-//                .Include(u => u.Eps)
-//                .FirstOrDefaultAsync(m => m.Id == id);
-//            if (usuario == null)
-//            {
-//                return NotFound();
-//            }
+            return View(result);
+        }
 
-//            return View(usuario);
-//        }
+        public async Task<ActionResult> Create()
+        {
+            var epsList = await _epsServicio.ListarTodos();
+            var rhList = TipoRhEnum.List();
 
-//        // GET: Usuarios/Create
-//        public IActionResult Create()
-//        {
-//            ViewData["EpsId"] = new SelectList(_context.Eps, "Id", "Id");
-//            return View();
-//        }
+            ViewData["EpsId"] = new SelectList(epsList.Items, "Id", "Nombre");
+            ViewData["TipoRhId"] = new SelectList(rhList, "Id", "Nombre");
 
-//        // POST: Usuarios/Create
-//        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-//        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-//        [HttpPost]
-//        [ValidateAntiForgeryToken]
-//        public async Task<IActionResult> Create([Bind("Id,RegistradoAt,ActualizadoAt,Nombre,TipoRhId,EpsId")] Usuario usuario)
-//        {
-//            if (ModelState.IsValid)
-//            {
-//                usuario.Id = Guid.NewGuid();
-//                _context.Add(usuario);
-//                await _context.SaveChangesAsync();
-//                return RedirectToAction(nameof(Index));
-//            }
-//            ViewData["EpsId"] = new SelectList(_context.Eps, "Id", "Id", usuario.EpsId);
-//            return View(usuario);
-//        }
+            return View();
+        }
 
-//        // GET: Usuarios/Edit/5
-//        public async Task<IActionResult> Edit(Guid? id)
-//        {
-//            if (id == null)
-//            {
-//                return NotFound();
-//            }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(UsuarioAgregarCommand modelo)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(modelo);
+            }
 
-//            var usuario = await _context.Usuarios.FindAsync(id);
-//            if (usuario == null)
-//            {
-//                return NotFound();
-//            }
-//            ViewData["EpsId"] = new SelectList(_context.Eps, "Id", "Id", usuario.EpsId);
-//            return View(usuario);
-//        }
+            var _item = await _usuarioServicio.Crear(modelo);
 
-//        // POST: Usuarios/Edit/5
-//        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-//        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-//        [HttpPost]
-//        [ValidateAntiForgeryToken]
-//        public async Task<IActionResult> Edit(Guid id, [Bind("Id,RegistradoAt,ActualizadoAt,Nombre,TipoRhId,EpsId")] Usuario usuario)
-//        {
-//            if (id != usuario.Id)
-//            {
-//                return NotFound();
-//            }
+            if (_item.Exitoso == false)
+            {
+                return BadRequest(ModelState);
+            }
 
-//            if (ModelState.IsValid)
-//            {
-//                try
-//                {
-//                    _context.Update(usuario);
-//                    await _context.SaveChangesAsync();
-//                }
-//                catch (DbUpdateConcurrencyException)
-//                {
-//                    if (!UsuarioExists(usuario.Id))
-//                    {
-//                        return NotFound();
-//                    }
-//                    else
-//                    {
-//                        throw;
-//                    }
-//                }
-//                return RedirectToAction(nameof(Index));
-//            }
-//            ViewData["EpsId"] = new SelectList(_context.Eps, "Id", "Id", usuario.EpsId);
-//            return View(usuario);
-//        }
+            return RedirectToAction(nameof(Details), new { id = _item.Result });
+        }
 
-//        // GET: Usuarios/Delete/5
-//        public async Task<IActionResult> Delete(Guid? id)
-//        {
-//            if (id == null)
-//            {
-//                return NotFound();
-//            }
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            var _item = await _usuarioServicio.Detalle(id);
 
-//            var usuario = await _context.Usuarios
-//                .Include(u => u.Eps)
-//                .FirstOrDefaultAsync(m => m.Id == id);
-//            if (usuario == null)
-//            {
-//                return NotFound();
-//            }
+            var item = new UsuarioEditarCommand
+            {
+                Id = _item.Item.Id,
+                Nombre = _item.Item.Nombre,
+                TipoRhId = _item.Item.TipoRhId,
+                EpsId = _item.Item.EpsId,
+            };
 
-//            return View(usuario);
-//        }
+            var epsList = await _epsServicio.ListarTodos();
+            var rhList = TipoRhEnum.List();
 
-//        // POST: Usuarios/Delete/5
-//        [HttpPost, ActionName("Delete")]
-//        [ValidateAntiForgeryToken]
-//        public async Task<IActionResult> DeleteConfirmed(Guid id)
-//        {
-//            var usuario = await _context.Usuarios.FindAsync(id);
-//            _context.Usuarios.Remove(usuario);
-//            await _context.SaveChangesAsync();
-//            return RedirectToAction(nameof(Index));
-//        }
+            ViewData["EpsId"] = new SelectList(epsList.Items, "Id", "Nombre", item.EpsId);
+            ViewData["TipoRhId"] = new SelectList(rhList, "Id", "Nombre", item.TipoRhId);
 
-//        private bool UsuarioExists(Guid id)
-//        {
-//            return _context.Usuarios.Any(e => e.Id == id);
-//        }
-//    }
-//}
+            return View(item);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, UsuarioEditarCommand modelo)
+        {
+            var _item = await _usuarioServicio.Editar(id, modelo);
+
+            if (_item.Exitoso == false)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return RedirectToAction(nameof(Details), new { id = _item.Result });
+        }
+
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var _item = await _usuarioServicio.Detalle(id);
+
+            return View(_item);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var _item = await _usuarioServicio.Borrar(id);
+
+            if (_item.Exitoso == false)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

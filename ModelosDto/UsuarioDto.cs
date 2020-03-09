@@ -85,7 +85,6 @@ namespace ModelosDto
     public class UsuarioEditarCommand
     {
         public Guid Id { get; set; }
-        public DateTime RegistradoAt { get; set; }
         public string Nombre { get; set; }
         public int TipoRhId { get; set; }
         public Guid EpsId { get; set; }

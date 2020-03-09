@@ -30,7 +30,7 @@ namespace Modelos
 
             var result = new RespuestaAux<Usuario>();
 
-            if (!string.IsNullOrEmpty(nombre))
+            if (string.IsNullOrEmpty(nombre))
             {
                 result.Exitoso = false;
                 result.Mensaje = "Modelo no es válido";
@@ -46,7 +46,7 @@ namespace Modelos
                 return result;
             }
 
-            if (!string.IsNullOrEmpty(epsId.ToString()))
+            if (string.IsNullOrEmpty(epsId.ToString()))
             {
                 result.Exitoso = false;
                 result.Mensaje = "Modelo no es válido";
@@ -70,11 +70,11 @@ namespace Modelos
             return result;
         }
 
-        public static RespuestaAux<Usuario> EditarUsuario(Guid id, DateTime registradoAt, string nombre, int tipoRhId, Guid epsId)
+        public static RespuestaAux<Usuario> EditarUsuario(Guid id, string nombre, int tipoRhId, Guid epsId)
         {
             var result = new RespuestaAux<Usuario>();
 
-            if (!string.IsNullOrEmpty(id.ToString()))
+            if (string.IsNullOrEmpty(id.ToString()))
             {
                 result.Exitoso = false;
                 result.Mensaje = "Modelo no es válido";
@@ -82,15 +82,7 @@ namespace Modelos
                 return result;
             }
 
-            if (!string.IsNullOrEmpty(registradoAt.ToString()))
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Modelo no es válido";
-
-                return result;
-            }
-
-            if (!string.IsNullOrEmpty(nombre))
+            if (string.IsNullOrEmpty(nombre))
             {
                 result.Exitoso = false;
                 result.Mensaje = "Modelo no es válido";
@@ -106,7 +98,7 @@ namespace Modelos
                 return result;
             }
 
-            if (!string.IsNullOrEmpty(epsId.ToString()))
+            if (string.IsNullOrEmpty(epsId.ToString()))
             {
                 result.Exitoso = false;
                 result.Mensaje = "Modelo no es válido";
@@ -117,7 +109,6 @@ namespace Modelos
             Usuario modelo = new Usuario()
             {
                 Id = id,
-                RegistradoAt = registradoAt,
                 ActualizadoAt = DateTime.UtcNow,
                 Nombre = nombre,
                 TipoRhId = tipoRhId,

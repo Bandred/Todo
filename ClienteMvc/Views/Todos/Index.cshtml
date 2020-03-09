@@ -1,4 +1,4 @@
-﻿@model UsuarioListViewModel
+﻿@model TodoListViewModel
 
 @{
     ViewData["Title"] = "Index";
@@ -19,13 +19,13 @@
                 Fecha Creación
             </th>
             <th>
-                Nombre
+                Todo
             </th>
             <th>
-                RH
+                Estado
             </th>
             <th>
-                EPS
+                Usuario
             </th>
             <th></th>
         </tr>
@@ -44,10 +44,17 @@
                     @Html.DisplayFor(modelItem => item.Nombre)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.TipoRh.Nombre)
+                    @if (item.Activo == true)
+                    {
+                        <span>Activo</span>
+                    }
+                    else
+                    {
+                        <span>Finalizado</span>
+                    }
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Eps.Nombre)
+                    @Html.DisplayFor(modelItem => item.Usuario.Nombre)
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |

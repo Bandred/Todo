@@ -1,4 +1,4 @@
-﻿@model UsuarioViewModel
+﻿@model TodoViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -23,22 +23,29 @@
             @Html.DisplayFor(model => model.Item.RegistradoAt)
         </dd>
         <dt class="col-sm-2">
-            Nombre
+            Todo
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Item.Nombre)
         </dd>
         <dt class="col-sm-2">
-            RH
+            Estado
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Item.TipoRh.Nombre)
+            @if (Model.Item.Activo == true)
+            {
+                <span>Activo</span>
+            }
+            else
+            {
+                <span>Finalizado</span>
+            }
         </dd>
         <dt class="col-sm-2">
-            EPS
+            Usuario
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Item.Eps.Nombre)
+            @Html.DisplayFor(model => model.Item.Usuario.Nombre)
         </dd>
     </dl>
 </div>

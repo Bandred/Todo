@@ -13,9 +13,9 @@ namespace ServiciosApi
     {
         Task<RespuestaAux> Borrar(Guid id);
         Task<RespuestaAux<Guid>> Crear(TodoAgregarCommand modeloCommand);
-        Task<RespuestaAux<TodoViewModel>> Detalle(Guid id);
+        Task<TodoViewModel> Detalle(Guid id);
         Task<RespuestaAux<Guid>> Editar(Guid id, TodoEditarCommand modeloCommand);
-        Task<RespuestaAux<TodoListViewModel>> ListarTodos();
+        Task<TodoListViewModel> ListarTodos();
     }
 
     public class TodoServicio : ITodoServicio
@@ -63,15 +63,17 @@ namespace ServiciosApi
 
                 if (_item.Exitoso == true)
                 {
-                    await _context.AddAsync(_item);
+                    await _context.AddAsync(_item.Result);
                     await _context.SaveChangesAsync();
 
                     result.Result = _item.Result.Id;
                     result.Exitoso = true;
                 }
-
-                result.Exitoso = _item.Exitoso;
-                result.Mensaje = _item.Mensaje;
+                else
+                {
+                    result.Exitoso = _item.Exitoso;
+                    result.Mensaje = _item.Mensaje;
+                }
             }
             catch (Exception e)
             {
@@ -82,25 +84,23 @@ namespace ServiciosApi
             return result;
         }
 
-        public async Task<RespuestaAux<TodoViewModel>> Detalle(Guid id)
+        public async Task<TodoViewModel> Detalle(Guid id)
         {
-            var result = new RespuestaAux<TodoViewModel>();
+            var result = new TodoViewModel();
 
             try
             {
                 var _item = await _context.Todos
-                    .Include(x => x.Usuario)
+                    .Include(x => x.Usuario.Eps)
                     .FirstOrDefaultAsync(x => x.Id == id);
 
-                result.Exitoso = true;
-                result.Result.Item = TodoDto.ProyectarDto(_item);
-                result.Result.HabilitarEditar = true;
-                result.Result.HabilitarBorrar = true;
+                result.Item = TodoDto.ProyectarDto(_item);
+                result.HabilitarEditar = true;
+                result.HabilitarBorrar = true;
             }
             catch (Exception e)
             {
-                result.Exitoso = false;
-                result.Mensaje = e.Message;
+
             }
 
             return result;
@@ -112,28 +112,26 @@ namespace ServiciosApi
 
             try
             {
-                var _itemOriginal = await _context.Todos
-                        .FirstOrDefaultAsync(x => x.Id == id);
-
                 var _item = Todo.EditarTodo(
                     id: modeloCommand.Id,
-                    registradoAt: modeloCommand.RegistradoAt,
                     nombre: modeloCommand.Nombre,
                     activo: modeloCommand.Activo,
                     usuarioId: modeloCommand.UsuarioId);
-                ;
+
 
                 if (_item.Exitoso == true)
                 {
-                    _context.Update(_item);
+                    _context.Todos.Update(_item.Result);
                     await _context.SaveChangesAsync();
 
                     result.Result = _item.Result.Id;
                     result.Exitoso = true;
                 }
-
-                result.Exitoso = _item.Exitoso;
-                result.Mensaje = _item.Mensaje;
+                else
+                {
+                    result.Exitoso = _item.Exitoso;
+                    result.Mensaje = _item.Mensaje;
+                }
             }
             catch (Exception e)
             {
@@ -141,17 +139,18 @@ namespace ServiciosApi
                 result.Mensaje = e.Message;
             }
 
+
             return result;
         }
 
-        public async Task<RespuestaAux<TodoListViewModel>> ListarTodos()
+        public async Task<TodoListViewModel> ListarTodos()
         {
-            var result = new RespuestaAux<TodoListViewModel>();
+            var result = new TodoListViewModel();
 
             try
             {
                 var _items = await _context.Todos
-                    .Include(x => x.Usuario)
+                    .Include(x => x.Usuario.Eps)
                     .OrderBy(x => x.RegistradoAt)
                     .ToListAsync();
 
@@ -159,14 +158,12 @@ namespace ServiciosApi
                     .Select(TodoDto.ProyectarDto())
                     .ToList();
 
-                result.Exitoso = true;
-                result.Result.Items = viewModelDto;
-                result.Result.HabilitarCrear = true;
+                result.Items = viewModelDto;
+                result.HabilitarCrear = true;
             }
             catch (Exception e)
             {
-                result.Exitoso = false;
-                result.Mensaje = e.Message;
+
             }
 
             return result;

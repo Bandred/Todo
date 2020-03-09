@@ -78,7 +78,6 @@ namespace ModelosDto
     public class TodoEditarCommand
     {
         public Guid Id { get; set; }
-        public DateTime RegistradoAt { get; set; }
         public string Nombre { get; set; }
         public bool Activo { get; set; }
         public Guid UsuarioId { get; set; }

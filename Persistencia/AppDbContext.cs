@@ -13,7 +13,6 @@ namespace Persistencia
             ChangeTracker.LazyLoadingEnabled = false;
         }
 
-
         public virtual DbSet<Todo> Todos { get; set; }
         public virtual DbSet<Usuario> Usuarios { get; set; }
         public virtual DbSet<Eps> Eps { get; set; }
